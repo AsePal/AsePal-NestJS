@@ -8,18 +8,16 @@ export class ChatService {
   constructor(private readonly agentService: AgentService) {}
 
   async chat(dto: ChatRequestDto): Promise<ChatResponseDto> {
-    const reply = await this.agentService.run({
+    const result = await this.agentService.run({
       message: dto.message,
       sessionId: dto.sessionId,
       userId: dto.userId,
     });
 
     return {
-      reply,
+      reply: result.reply,
       sessionId: dto.sessionId,
-      debug: {
-        agent: 'v0',
-      },
+      debug: result.debug,
     };
   }
 }
