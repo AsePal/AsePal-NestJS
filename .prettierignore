@@ -1,0 +1,10 @@
+# 编译后的文件夹
+dist
+node_modules
+
+# 缓存和日志
+coverage
+*.log
+
+# 系统文件
+.DS_Store

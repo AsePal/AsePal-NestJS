@@ -2,7 +2,11 @@ export class ChatResponseDto {
   reply: string;
   sessionId: string;
   debug?: {
-    route: 'tool:echo' | 'llm';
-    reason: string;
+    decision: {
+      type: 'tool' | 'llm';
+      tool?: string;
+      reason: string;
+    };
+    error?: string;
   };
 }
