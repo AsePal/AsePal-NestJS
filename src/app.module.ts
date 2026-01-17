@@ -9,6 +9,7 @@ import { LlmModule } from './llm/llm.module';
 import { ToolsModule } from './tools/tools.module';
 import { DebugModule } from './debug/debug.module';
 import { HealthModule } from './health/health.module';
+import { LoggerModule } from './common/logger/logger.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { HealthModule } from './health/health.module';
     ConfigModule,
     DebugModule,
     HealthModule,
+    LoggerModule,
   ],
 })
 export class AppModule {}
