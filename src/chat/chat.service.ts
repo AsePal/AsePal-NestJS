@@ -1,53 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
+import { DifyService } from 'src/dify/dify.service';
+import { SessionService } from 'src/session/session.service';
 
-import { AgentService } from '../agent/agent.service';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+
 import { ChatRequestDto } from './dto/chat.request.dto';
 import { ChatResponseDto } from './dto/chat.response.dto';
-import { ChatUseCaseResponseDto } from './dto/chat.usecase.response.dto';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly agentService: AgentService) {}
+  constructor(
+    private readonly sessionService: SessionService,
+    private readonly difyService: DifyService,
+    private readonly logger: LoggerService,
+  ) {}
 
   async chat(dto: ChatRequestDto): Promise<ChatResponseDto> {
-    const result = await this.agentService.run({
-      message: dto.message,
-      sessionId: dto.sessionId,
-      userId: dto.userId,
-    });
-
-    return {
-      reply: result.reply,
-      sessionId: dto.sessionId,
-      debug: result.debug,
-    };
-  }
-
-  async useCase(dto: ChatRequestDto): Promise<ChatUseCaseResponseDto> {
-    const first = await this.agentService.run({
-      message: `请把下面需求转成TODO:\n${dto.message}`,
-      sessionId: dto.sessionId,
-      userId: dto.userId,
-    });
-
-    const second = await this.agentService.run({
-      message: '再用一句话总结上面的TODO',
-      sessionId: dto.sessionId,
-      userId: dto.userId,
-    });
-
-    return {
-      sessionId: dto.sessionId,
-      steps: [
-        {
-          reply: first.reply,
-          debug: first.debug,
-        },
-        {
-          reply: second.reply,
-          debug: second.debug,
-        },
-      ],
-    };
+    try {
+      const session = await this.sessionService.getOrCreate(dto.sessionId, dto.userId);
+      const difyResult = await this.difyService.sendMessage({
+        message: dto.message,
+        userId: dto.userId ?? session.userId ?? dto.sessionId,
+        conversationId: session.difyConversationId ?? undefined,
+      });
+      await this.sessionService.updateConversationId(session.sessionId, difyResult.conversationId);
+      this.logger.info('Dify response received', {
+        sessionId: session.sessionId,
+        difyConversationId: difyResult.conversationId,
+      });
+      return {
+        reply: difyResult.answer,
+        sessionId: session.sessionId,
+      };
+    } catch (error) {
+      this.logger.error('Chat gateway failed', {
+        message: error instanceof Error ? error.message : 'unknown error',
+      });
+      throw new InternalServerErrorException('Dify gateway error');
+    }
   }
 }

@@ -1,13 +1,13 @@
+import { DifyModule } from 'src/dify/dify.module';
+import { SessionModule } from 'src/session/session.module';
+
 import { Module } from '@nestjs/common';
 
-import { AgentModule } from '../agent/agent.module';
-import { LlmModule } from '../llm/llm.module';
-import { ToolsModule } from '../tools/tools.module';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 
 @Module({
-  imports: [AgentModule, LlmModule, ToolsModule],
+  imports: [DifyModule, SessionModule],
   controllers: [ChatController],
   providers: [ChatService],
   exports: [ChatService],
