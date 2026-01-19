@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ValkeyHealthService {

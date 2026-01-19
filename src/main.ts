@@ -6,6 +6,7 @@ import { requestIdMiddleware } from './common/middleware/request-id.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   app.use(requestIdMiddleware);
   app.use((req, _res, next) => {
     requestContext.run({ requestId: req['requestId'] }, () => next());
