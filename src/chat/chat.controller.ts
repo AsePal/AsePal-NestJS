@@ -1,7 +1,7 @@
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { LoggerService } from 'src/common/logger/logger.service';
 
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 
 import { ChatService } from './chat.service';
 import { ChatRequestDto } from './dto/chat.request.dto';
@@ -16,8 +16,8 @@ export class ChatController {
   ) {}
 
   @Post()
-  async chat(@Body() dto: ChatRequestDto): Promise<ChatResponseDto> {
+  async chat(@Body() dto: ChatRequestDto, @Request() req: any): Promise<ChatResponseDto> {
     this.logger.info(`我是日志，我在${ChatController.name}里，后面是dto`, dto);
-    return this.chatService.chat(dto);
+    return this.chatService.chat({ ...dto, userId: req.user.userId });
   }
 }
