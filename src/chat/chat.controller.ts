@@ -1,11 +1,13 @@
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { LoggerService } from 'src/common/logger/logger.service';
 
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 
 import { ChatService } from './chat.service';
 import { ChatRequestDto } from './dto/chat.request.dto';
 import { ChatResponseDto } from './dto/chat.response.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('chat')
 export class ChatController {
   constructor(

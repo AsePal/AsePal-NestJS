@@ -11,17 +11,8 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Body() _dto: LoginDto, @Request() req: any, @Response({ passthrough: true }) res) {
-    const { accessToken } = await this.auth.login(req.user);
-
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return { user: req.user };
+  async login(@Body() _dto: LoginDto, @Request() req: any) {
+    return this.auth.login(req.user);
   }
 
   @Post('register')
