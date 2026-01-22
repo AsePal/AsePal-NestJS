@@ -1,23 +1,16 @@
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { LoggerService } from 'src/common/logger/logger.service';
-
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
-import { ChatRequestDto } from './dto/chat.request.dto';
-import { ChatResponseDto } from './dto/chat.response.dto';
+import { ChatSendDto } from './dto/chat-send.dto';
 
-@UseGuards(JwtAuthGuard)
 @Controller('chat')
 export class ChatController {
-  constructor(
-    private readonly chatService: ChatService,
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly chat: ChatService) {}
 
-  @Post()
-  async chat(@Body() dto: ChatRequestDto, @Request() req: any): Promise<ChatResponseDto> {
-    this.logger.info(`我是日志，我在${ChatController.name}里，后面是dto`, dto);
-    return this.chatService.chat({ ...dto, userId: req.user.userId });
+  @UseGuards(JwtAuthGuard)
+  @Post('send')
+  async send(@Body() dto: ChatSendDto, @Request() req: any) {
+    return this.chat.sendMessage(dto, req.user?.userId);
   }
 }

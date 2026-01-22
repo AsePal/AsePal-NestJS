@@ -1,42 +1,29 @@
-import { LoggerService } from 'src/common/logger/logger.service';
-import { DifyService } from 'src/dify/dify.service';
-import { SessionService } from 'src/session/session.service';
+import { randomUUID } from 'node:crypto';
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
-import { ChatRequestDto } from './dto/chat.request.dto';
-import { ChatResponseDto } from './dto/chat.response.dto';
+import { DifyService } from '../dify/dify.service';
+import { ChatSendDto } from './dto/chat-send.dto';
 
 @Injectable()
 export class ChatService {
-  constructor(
-    private readonly sessionService: SessionService,
-    private readonly difyService: DifyService,
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly dify: DifyService) {}
 
-  async chat(dto: ChatRequestDto): Promise<ChatResponseDto> {
-    try {
-      const session = await this.sessionService.getOrCreate(dto.sessionId, dto.userId);
-      const difyResult = await this.difyService.sendMessage({
-        message: dto.message,
-        userId: dto.userId ?? session.userId ?? dto.sessionId,
-        conversationId: session.difyConversationId ?? undefined,
-      });
-      await this.sessionService.updateConversationId(session.sessionId, difyResult.conversationId);
-      this.logger.info('Dify response received', {
-        sessionId: session.sessionId,
-        difyConversationId: difyResult.conversationId,
-      });
-      return {
-        reply: difyResult.answer,
-        sessionId: session.sessionId,
-      };
-    } catch (error) {
-      this.logger.error('Chat gateway failed', {
-        message: error instanceof Error ? error.message : 'unknown error',
-      });
-      throw new InternalServerErrorException('Dify gateway error');
+  async sendMessage(dto: ChatSendDto, userId?: string) {
+    if (!userId) {
+      throw new UnauthorizedException('Missing userId');
     }
+
+    // const conversationId = dto.conversationId ?? randomUUID();
+    const result = await this.dify.sendMessage({
+      message: dto.message,
+      conversationId: dto.conversationId,
+      userId,
+    });
+
+    return {
+      answer: result.answer,
+      conversationId: result.conversationId,
+    };
   }
 }

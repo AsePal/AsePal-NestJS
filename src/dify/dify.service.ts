@@ -40,7 +40,7 @@ export class DifyService {
     const body: DifyChatRequest = {
       query: input.message,
       response_mode: this.responseMode,
-      user: input.userId ?? '1234-abcd',
+      user: input.userId,
       conversation_id: input.conversationId,
       inputs: {},
     };
