@@ -14,10 +14,7 @@ const origins = (process.env.CORS_ORIGINS ?? '')
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: origins.length ? origins : false,
-    credentials: false,
-  });
+  app.enableCors();
   app.use(cookieParser());
   app.use(requestIdMiddleware);
   app.use((req, _res, next) => {
