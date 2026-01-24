@@ -31,6 +31,18 @@ export class UserService {
     });
   }
 
+  async findByEmail(email: string) {
+    return this.repo.findOne({
+      where: { email },
+    });
+  }
+
+  async findByPhone(phone: string) {
+    return this.repo.findOne({
+      where: { phone },
+    });
+  }
+
   async findById(id: string) {
     return this.repo.findOne({ where: { id } });
   }
@@ -91,5 +103,9 @@ export class UserService {
     await this.repo.save(user);
 
     return this.getUserInfo(userId);
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await this.repo.update(userId, { passwordHash });
   }
 }

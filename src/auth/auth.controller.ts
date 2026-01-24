@@ -3,6 +3,7 @@ import type { Response } from 'express';
 import { Body, Controller, Post, Request, Res, UseGuards } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -23,19 +24,8 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
-    const user = await this.auth.register(dto);
-
-    const { accessToken } = await this.auth.login(user);
-
-    res.status(201).cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return { user };
+  async register(@Body() dto: RegisterDto) {
+    return await this.auth.register(dto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -45,5 +35,15 @@ export class AuthController {
       await this.auth.revokeToken(req.user.jti);
     }
     return { message: 'Logged out successfully' };
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.auth.sendForgotPasswordCode(dto);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.auth.resetPassword(dto);
   }
 }

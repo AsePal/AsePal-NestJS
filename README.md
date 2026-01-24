@@ -79,42 +79,7 @@ pnpm install
 
 ## 环境变量配置
 
-创建 `.env` 文件并配置以下环境变量：
-
-```env
-# 应用配置
-NEST_PORT=3000
-
-# 数据库配置
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=your_password
-DATABASE_NAME=sinosea
-
-# JWT 配置
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=7d
-
-# Dify 配置
-DIFY_BASE_URL=https://api.dify.ai/v1
-DIFY_API_KEY=your_dify_api_key
-DIFY_RESPONSE_MODE=blocking
-DIFY_TIMEOUT_MS=15000
-
-# Cloudflare R2 配置
-R2_ACCOUNT_ID=your_account_id
-R2_ACCESS_KEY_ID=your_access_key
-R2_SECRET_ACCESS_KEY=your_secret_key
-R2_BUCKET_NAME=your_bucket_name
-R2_PUBLIC_URL=https://your-bucket.r2.dev
-
-# Valkey/Redis 配置
-VALKEY_HOST=localhost
-VALKEY_PORT=6379
-VALKEY_PASSWORD=
-VALKEY_DB=0
-```
+复制 `.env.example` 为 `.env` 后修改内部配置
 
 ## 运行
 
@@ -161,37 +126,6 @@ pnpm run lint
 详见 [API 文档](./API.md)
 
 ---
-
-```
-src/
-├── app.module.ts              # 应用主模块
-├── main.ts                    # 应用入口文件
-├── auth/                      # 认证模块
-│   ├── dto/                   # 数据传输对象
-│   ├── guards/                # 守卫
-│   └── strategies/            # Passport 策略
-├── chat/                      # 聊天模块
-│   ├── chat.controller.ts
-│   ├── chat.service.ts
-│   └── dto/
-├── user/                      # 用户模块
-│   ├── user.entity.ts         # 用户实体
-│   ├── user.service.ts
-│   └── dto/
-├── dify/                      # Dify AI 集成
-│   ├── dify.service.ts
-│   └── dify.types.ts
-├── infra/                     # 基础设施
-│   ├── r2/                    # R2 对象存储
-│   └── valkey/                # Valkey 缓存
-├── config/                    # 配置文件
-├── common/                    # 公共模块
-│   ├── context/               # 请求上下文
-│   ├── middleware/            # 中间件
-│   ├── constants.ts
-│   └── types.ts
-└── health/                    # 健康检查模块
-```
 
 ## 核心特性
 

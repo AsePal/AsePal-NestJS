@@ -23,15 +23,15 @@
 
 ```json
 {
-  "id": "uuid",
-  "username": "string",
-  "email": "string|null",
-  "phone": "string|null",
-  "isActive": true,
-  "createdAt": "ISO8601",
-  "updatedAt": "ISO8601"
+  "accessToken": "jwt_token_string"
 }
 ```
+
+**说明**
+
+- 注册成功后自动生成JWT令牌并返回
+- 客户端需自行保存accessToken用于后续请求
+- 可通过 `/user/info` 接口获取用户详细信息
 
 ---
 
@@ -60,8 +60,70 @@
 
 **说明**
 
-- Token 自动存储在 HttpOnly Cookie 中
 - 用户名、邮箱或手机号都可以用来登录
+
+---
+
+### 忘记密码 - 发送验证码
+
+`POST /auth/forgot-password`
+
+向用户的邮箱或手机号发送6位验证码用于重置密码。
+
+**请求体**
+
+```json
+{
+  "email": "string (可选)",
+  "phone": "string (可选)"
+}
+```
+
+**说明**
+
+- `email` 和 `phone` 至少提供一个
+- 验证码有效期为5分钟
+- 即使用户不存在也会返回成功消息（防止用户枚举攻击）
+- 验证码会通过Logger打印在服务端日志中
+
+**响应**
+
+```json
+{
+  "message": "Verification code sent to your email/phone"
+}
+```
+
+---
+
+### 忘记密码 - 重置密码
+
+`POST /auth/reset-password`
+
+使用验证码重置密码。
+
+**请求体**
+
+```json
+{
+  "identifier": "string (邮箱或手机号)",
+  "verificationCode": "string (6位验证码)",
+  "newPassword": "string"
+}
+```
+
+**响应**
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+**错误响应**
+
+- `400 Bad Request`: 验证码过期或无效
+- `400 Bad Request`: 用户不存在
 
 ---
 
@@ -79,7 +141,8 @@
 
 ```json
 {
-  "message": "string"
+  "message": "string",
+  "conversationId": "string (不携带则创建新对话)"
 }
 ```
 
@@ -87,7 +150,8 @@
 
 ```json
 {
-  "response": "string"
+  "answer": "string",
+  "conversationId": "string"
 }
 ```
 
@@ -105,7 +169,8 @@
 
 ```json
 {
-  "message": "string"
+  "message": "string",
+  "conversationId": "string (不携带则创建新对话)"
 }
 ```
 
