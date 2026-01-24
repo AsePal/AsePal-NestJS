@@ -5,6 +5,14 @@ import { ConfigService } from '@nestjs/config';
 
 import { ValkeyHealthService } from './valkey.health';
 
+interface ValkeyConfig {
+  host: string;
+  port: number;
+  password?: string;
+  db: number;
+  connectTimeout: number;
+}
+
 @Global()
 @Module({
   providers: [
@@ -12,7 +20,7 @@ import { ValkeyHealthService } from './valkey.health';
       provide: 'VALKEY',
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {
-        const cfg = config.get('valkey');
+        const cfg = config.get<ValkeyConfig>('valkey')!;
         const redis = new Redis({
           host: cfg.host,
           port: cfg.port,

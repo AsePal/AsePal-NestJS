@@ -3,8 +3,11 @@ import * as bcrypt from 'bcrypt';
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+import type { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register.dto';
+
+type SafeUser = Omit<User, 'passwordHash'>;
 
 @Injectable()
 export class AuthService {
@@ -13,7 +16,7 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async validateUser(identifier: string, password: string) {
+  async validateUser(identifier: string, password: string): Promise<SafeUser> {
     const user = await this.users.findForLogin(identifier);
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
@@ -24,7 +27,8 @@ export class AuthService {
     if (user.isActive === false) throw new UnauthorizedException('User disabled');
 
     // 重要：返回时去掉 hash
-    const { passwordHash, ...safeUser } = user as any;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, ...safeUser } = user;
     return safeUser;
   }
 
@@ -35,22 +39,23 @@ export class AuthService {
     };
   }
 
-  async register(dto: RegisterDto) {
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+  async register(dto: RegisterDto): Promise<SafeUser> {
+    const hash = await bcrypt.hash(dto.password, 10);
 
     try {
       const user = await this.users.createUser({
         username: dto.username,
         email: dto.email,
         phone: dto.phone,
-        passwordHash,
+        passwordHash: hash,
       });
 
-      const { passwordHash: _, ...safeUser } = user as any;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passwordHash, ...safeUser } = user;
       return safeUser;
-    } catch (e: any) {
+    } catch (e: unknown) {
       // PostgreSQL 唯一约束错误
-      if (e.code === '23505') {
+      if (e instanceof Error && 'code' in e && e.code === '23505') {
         throw new ConflictException('User already exists');
       }
       throw e;

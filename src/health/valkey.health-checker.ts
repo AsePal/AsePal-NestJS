@@ -16,7 +16,7 @@ export class ValkeyHealthChecker {
     try {
       await this.redis.ping();
       return status.up();
-    } catch (e) {
+    } catch {
       return status.down({
         message: 'Valkey ping failed',
       });

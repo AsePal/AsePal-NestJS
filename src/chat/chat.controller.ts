@@ -6,19 +6,27 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { ChatSendDto } from './dto/chat-send.dto';
 
+interface JwtAuthenticatedRequest {
+  user?: { userId: string; username: string };
+}
+
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chat: ChatService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('send')
-  async send(@Body() dto: ChatSendDto, @Request() req: any) {
+  async send(@Body() dto: ChatSendDto, @Request() req: JwtAuthenticatedRequest) {
     return this.chat.sendMessage(dto, req.user?.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('stream')
-  async stream(@Body() dto: ChatSendDto, @Request() req: any, @Res() res: Response) {
+  async stream(
+    @Body() dto: ChatSendDto,
+    @Request() req: JwtAuthenticatedRequest,
+    @Res() res: Response,
+  ) {
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');

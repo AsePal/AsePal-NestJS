@@ -10,7 +10,7 @@ export class ValkeyHealthService {
     try {
       const res = await this.redis.ping();
       return res === 'PONG';
-    } catch (e) {
+    } catch {
       return false;
     }
   }

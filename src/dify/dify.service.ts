@@ -180,8 +180,11 @@ export class DifyService {
               getConversationId: () => conversationId,
               getMessageId: () => messageId,
             });
-          } catch (parseError) {
-            this.logger.error('Failed to parse SSE event', { line, error: parseError });
+          } catch (parseError: unknown) {
+            this.logger.error('Failed to parse SSE event', {
+              line,
+              error: parseError instanceof Error ? parseError.message : String(parseError),
+            });
           }
         }
       }
