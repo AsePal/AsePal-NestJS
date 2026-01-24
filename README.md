@@ -158,25 +158,9 @@ pnpm run lint
 
 ## API 端点
 
-### 认证相关
+详见 [API 文档](./API.md)
 
-- `POST /auth/register` - 用户注册
-- `POST /auth/login` - 用户登录
-
-### 聊天相关
-
-- `POST /chat/send` - 发送消息 (需要认证)
-- `POST /chat/stream` - 流式聊天 (需要认证)
-
-### 用户相关
-
-- `GET /user/info` - 获取用户信息 (需要认证)
-
-### 健康检查
-
-- `GET /health` - 健康检查端点
-
-## 项目结构
+---
 
 ```
 src/
