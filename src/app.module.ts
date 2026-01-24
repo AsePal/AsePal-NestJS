@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
-import { LoggerModule } from './common/logger/logger.module';
 import { valkeyConfig } from './config/valkey.config';
 import { HealthModule } from './health/health.module';
 import { ValkeyModule } from './infra/valkey/valkey.module';
@@ -32,7 +31,6 @@ import { UserModule } from './user/user.module';
     ValkeyModule,
     ConfigModule,
     HealthModule,
-    LoggerModule,
     UserModule,
     AuthModule,
   ],

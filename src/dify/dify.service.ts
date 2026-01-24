@@ -1,6 +1,4 @@
-import { LoggerService } from 'src/common/logger/logger.service';
-
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
@@ -20,10 +18,9 @@ export class DifyService {
   private readonly responseMode: DifyResponseMode;
   private readonly timeoutMs: number;
 
-  constructor(
-    private readonly config: ConfigService,
-    private readonly logger: LoggerService,
-  ) {
+  private readonly logger = new Logger(DifyService.name);
+
+  constructor(private readonly config: ConfigService) {
     this.baseUrl = this.config.get<string>('DIFY_BASE_URL') ?? process.env.DIFY_BASE_URL ?? '';
     this.apiKey = this.config.get<string>('DIFY_API_KEY') ?? process.env.DIFY_API_KEY ?? '';
     this.responseMode = (this.config.get<string>('DIFY_RESPONSE_MODE') ??
@@ -64,16 +61,13 @@ export class DifyService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        this.logger.error('Dify request failed', {
-          status: response.status,
-          body: errorText,
-        });
+        this.logger.error(`Dify request failed: status=${response.status}, body=${errorText}`);
         throw new InternalServerErrorException('Dify request failed');
       }
 
       const data = (await response.json()) as DifyChatResponse;
       if (!data?.answer || !data?.conversation_id) {
-        this.logger.error('Dify response invalid', { data });
+        this.logger.error(`Dify response invalid: ${JSON.stringify(data)}`);
         throw new InternalServerErrorException('Dify response invalid');
       }
 
@@ -85,9 +79,9 @@ export class DifyService {
       if (error instanceof InternalServerErrorException) {
         throw error;
       }
-      this.logger.error('Dify request error', {
-        message: error instanceof Error ? error.message : 'unknown error',
-      });
+      this.logger.error(
+        `Dify request error: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
       throw new InternalServerErrorException('Dify request error');
     } finally {
       clearTimeout(timer);
@@ -136,10 +130,9 @@ export class DifyService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        this.logger.error('Dify stream request failed', {
-          status: response.status,
-          body: errorText,
-        });
+        this.logger.error(
+          `Dify stream request failed: status=${response.status}, body=${errorText}`,
+        );
         writer.write({ type: 'error', message: 'Dify request failed' });
         writer.end();
         return;
@@ -181,10 +174,9 @@ export class DifyService {
               getMessageId: () => messageId,
             });
           } catch (parseError: unknown) {
-            this.logger.error('Failed to parse SSE event', {
-              line,
-              error: parseError instanceof Error ? parseError.message : String(parseError),
-            });
+            this.logger.error(
+              `Failed to parse SSE event: line=${line}, error=${parseError instanceof Error ? parseError.message : String(parseError)}`,
+            );
           }
         }
       }
@@ -192,9 +184,9 @@ export class DifyService {
       if (error instanceof Error && error.name === 'AbortError') {
         writer.write({ type: 'error', message: 'Request timeout' });
       } else {
-        this.logger.error('Dify stream error', {
-          message: error instanceof Error ? error.message : 'unknown error',
-        });
+        this.logger.error(
+          `Dify stream error: ${error instanceof Error ? error.message : 'unknown error'}`,
+        );
         writer.write({ type: 'error', message: 'Stream error' });
       }
     } finally {
