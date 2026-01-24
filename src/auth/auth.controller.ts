@@ -5,10 +5,11 @@ import { Body, Controller, Post, Request, Res, UseGuards } from '@nestjs/common'
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 interface AuthenticatedRequest {
-  user: { id: string; username: string };
+  user: { id: string; username: string; jti?: string };
 }
 
 @Controller('auth')
@@ -35,5 +36,14 @@ export class AuthController {
     });
 
     return { user };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req: AuthenticatedRequest) {
+    if (req.user.jti) {
+      await this.auth.revokeToken(req.user.jti);
+    }
+    return { message: 'Logged out successfully' };
   }
 }

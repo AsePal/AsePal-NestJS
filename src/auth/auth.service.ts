@@ -1,6 +1,9 @@
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
+import type Redis from 'ioredis';
 
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import type { User } from '../user/user.entity';
@@ -14,6 +17,8 @@ export class AuthService {
   constructor(
     private readonly users: UserService,
     private readonly jwt: JwtService,
+    @Inject('VALKEY') private readonly valkey: Redis,
+    private readonly config: ConfigService,
   ) {}
 
   async validateUser(identifier: string, password: string): Promise<SafeUser> {
@@ -33,10 +38,47 @@ export class AuthService {
   }
 
   async login(user: { id: string; username: string }) {
-    const payload = { sub: user.id, username: user.username };
+    const jti = randomUUID();
+    const payload = { sub: user.id, username: user.username, jti };
+
+    // 将jti存储到Valkey，过期时间与JWT一致
+    const expiresIn = this.config.get<string>('JWT_EXPIRES_IN') ?? '7d';
+    const ttlSeconds = this.parseExpiresIn(expiresIn);
+    await this.valkey.setex(`jwt:${jti}`, ttlSeconds, user.id);
+
     return {
       accessToken: await this.jwt.signAsync(payload),
     };
+  }
+
+  private parseExpiresIn(expiresIn: string): number {
+    const match = expiresIn.match(/^(\d+)([smhd])$/);
+    if (!match) return 7 * 24 * 60 * 60; // 默认7天
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    switch (unit) {
+      case 's':
+        return value;
+      case 'm':
+        return value * 60;
+      case 'h':
+        return value * 60 * 60;
+      case 'd':
+        return value * 24 * 60 * 60;
+      default:
+        return 7 * 24 * 60 * 60;
+    }
+  }
+
+  async validateJti(jti: string, userId: string): Promise<boolean> {
+    const storedUserId = await this.valkey.get(`jwt:${jti}`);
+    return storedUserId === userId;
+  }
+
+  async revokeToken(jti: string): Promise<void> {
+    await this.valkey.del(`jwt:${jti}`);
   }
 
   async register(dto: RegisterDto): Promise<SafeUser> {
