@@ -25,6 +25,9 @@ export class User {
   @Column({ nullable: true, select: false })
   passwordHash: string;
 
+  @Column({ nullable: true })
+  avatarUrl?: string;
+
   @Column({ default: true })
   isActive: boolean;
 
