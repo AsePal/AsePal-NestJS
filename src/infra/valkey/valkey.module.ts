@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 
-import { Global, Module } from '@nestjs/common';
+import { Global, Logger, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { ValkeyHealthService } from './valkey.health';
@@ -20,6 +20,7 @@ interface ValkeyConfig {
       provide: 'VALKEY',
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {
+        const logger = new Logger('ValkeyModule');
         const cfg = config.get<ValkeyConfig>('valkey')!;
         const redis = new Redis({
           host: cfg.host,
@@ -30,7 +31,7 @@ interface ValkeyConfig {
         });
         try {
           await redis.ping();
-          console.log('[Valkey] connected');
+          logger.log('[Valkey] connected');
         } catch {
           process.exit(1);
         }
