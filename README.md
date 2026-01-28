@@ -156,7 +156,7 @@ pnpm run lint
 
 ## 许可证
 
-UNLICENSED (私有项目)
+本项目采用 [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE) 协议
 
 ## 作者
 
