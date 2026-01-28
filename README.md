@@ -1,4 +1,4 @@
-# SinoSEA NestJS
+# AsePal NestJS
 
 基于 NestJS 框架的企业级后端服务，集成了用户认证、聊天、Dify AI、对象存储和缓存等功能。
 
@@ -160,4 +160,4 @@ pnpm run lint
 
 ## 作者
 
-SinoSEA AI Team
+AsePal AI Team
