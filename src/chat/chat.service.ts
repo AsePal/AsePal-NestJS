@@ -1,8 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { DifyService } from '../dify/dify.service';
+import { ConversationListResult, MessageListResult } from '../dify/dify.types';
 import { SSEWriter } from '../dify/dify.types';
 import { ChatSendDto } from './dto/chat-send.dto';
+import { ConversationsQueryDto } from './dto/conversations-query.dto';
+import { MessagesQueryDto } from './dto/messages-query.dto';
 
 @Injectable()
 export class ChatService {
@@ -38,5 +41,29 @@ export class ChatService {
       },
       writer,
     );
+  }
+
+  async getConversations(
+    query: ConversationsQueryDto,
+    userId?: string,
+  ): Promise<ConversationListResult> {
+    if (!userId) throw new UnauthorizedException('Missing userId');
+
+    return this.dify.getConversations({
+      userId,
+      limit: query.limit,
+      lastId: query.last_id,
+    });
+  }
+
+  async getMessages(query: MessagesQueryDto, userId?: string): Promise<MessageListResult> {
+    if (!userId) throw new UnauthorizedException('Missing userId');
+
+    return this.dify.getMessages({
+      userId,
+      conversationId: query.conversation_id,
+      firstId: query.first_id,
+      limit: query.limit,
+    });
   }
 }

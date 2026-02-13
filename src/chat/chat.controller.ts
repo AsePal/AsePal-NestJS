@@ -1,10 +1,12 @@
 import type { Response } from 'express';
 
-import { Body, Controller, Post, Request, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Request, Res, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { ChatSendDto } from './dto/chat-send.dto';
+import { ConversationsQueryDto } from './dto/conversations-query.dto';
+import { MessagesQueryDto } from './dto/messages-query.dto';
 
 interface JwtAuthenticatedRequest {
   user?: { userId: string; username: string };
@@ -13,6 +15,21 @@ interface JwtAuthenticatedRequest {
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chat: ChatService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('conversations')
+  async getConversations(
+    @Query() query: ConversationsQueryDto,
+    @Request() req: JwtAuthenticatedRequest,
+  ) {
+    return this.chat.getConversations(query, req.user?.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('messages')
+  async getMessages(@Query() query: MessagesQueryDto, @Request() req: JwtAuthenticatedRequest) {
+    return this.chat.getMessages(query, req.user?.userId);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Post('send')

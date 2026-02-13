@@ -1,5 +1,95 @@
 export type DifyResponseMode = 'blocking' | 'streaming';
 
+// ========== 会话列表类型 ==========
+
+export interface DifyConversationItem {
+  id: string;
+  name: string;
+  inputs: Record<string, any>;
+  status: string;
+  introduction: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface DifyConversationsResponse {
+  limit: number;
+  has_more: boolean;
+  data: DifyConversationItem[];
+}
+
+export interface GetConversationsInput {
+  userId: string;
+  limit?: number;
+  lastId?: string;
+}
+
+export interface ConversationListResult {
+  hasMore: boolean;
+  items: {
+    id: string;
+    title: string;
+    createdAt: number;
+    updatedAt: number;
+  }[];
+}
+
+// ========== 消息历史类型 ==========
+
+export interface DifyMessageItem {
+  id: string;
+  conversation_id: string;
+  inputs: Record<string, any>;
+  query: string;
+  answer: string;
+  message_files: {
+    id: string;
+    type: string;
+    url: string;
+    belongs_to: string;
+  }[];
+  feedback: {
+    rating: string;
+  } | null;
+  retriever_resources: {
+    position: number;
+    dataset_id: string;
+    dataset_name: string;
+    document_id: string;
+    document_name: string;
+    segment_id: string;
+    score: number;
+    content: string;
+  }[];
+  created_at: number;
+}
+
+export interface DifyMessagesResponse {
+  limit: number;
+  has_more: boolean;
+  data: DifyMessageItem[];
+}
+
+export interface GetMessagesInput {
+  userId: string;
+  conversationId: string;
+  firstId?: string;
+  limit?: number;
+}
+
+export interface MessageListResult {
+  data: {
+    conversationId: string;
+    hasMore: boolean;
+    items: {
+      id: string;
+      role: 'user' | 'assistant';
+      type: 'text';
+      content: string;
+    }[];
+  };
+}
+
 export interface DifyChatRequest {
   query: string;
   response_mode: DifyResponseMode;

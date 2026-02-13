@@ -2,12 +2,18 @@ import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common
 import { ConfigService } from '@nestjs/config';
 
 import {
+  ConversationListResult,
   DifyChatRequest,
   DifyChatResponse,
+  DifyConversationsResponse,
+  DifyMessagesResponse,
   DifyResponseMode,
   DifySSEEvent,
   DifySendMessageInput,
   DifySendMessageResult,
+  GetConversationsInput,
+  GetMessagesInput,
+  MessageListResult,
   SSEWriter,
 } from './dify.types';
 
@@ -259,6 +265,130 @@ export class DifyService {
         // 这里暂时忽略
         break;
       }
+    }
+  }
+
+  async getConversations(input: GetConversationsInput): Promise<ConversationListResult> {
+    if (!this.baseUrl || !this.apiKey) {
+      throw new InternalServerErrorException('Dify configuration missing');
+    }
+
+    const params = new URLSearchParams();
+    params.set('user', input.userId);
+    if (input.limit != null) params.set('limit', String(input.limit));
+    if (input.lastId) params.set('last_id', input.lastId);
+
+    const url = `${this.buildUrl('/v1/conversations')}?${params.toString()}`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(
+          `Dify conversations failed: status=${response.status}, body=${errorText}`,
+        );
+        throw new InternalServerErrorException('Dify conversations request failed');
+      }
+
+      const data = (await response.json()) as DifyConversationsResponse;
+
+      return {
+        hasMore: data.has_more,
+        items: (data.data ?? []).map((item) => ({
+          id: item.id,
+          title: item.name,
+          createdAt: item.created_at * 1000,
+          updatedAt: item.updated_at * 1000,
+        })),
+      };
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      this.logger.error(
+        `Dify conversations error: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      throw new InternalServerErrorException('Dify conversations error');
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async getMessages(input: GetMessagesInput): Promise<MessageListResult> {
+    if (!this.baseUrl || !this.apiKey) {
+      throw new InternalServerErrorException('Dify configuration missing');
+    }
+
+    const params = new URLSearchParams();
+    params.set('user', input.userId);
+    params.set('conversation_id', input.conversationId);
+    if (input.firstId) params.set('first_id', input.firstId);
+    if (input.limit != null) params.set('limit', String(input.limit));
+
+    const url = `${this.buildUrl('/v1/messages')}?${params.toString()}`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(`Dify messages failed: status=${response.status}, body=${errorText}`);
+        throw new InternalServerErrorException('Dify messages request failed');
+      }
+
+      const data = (await response.json()) as DifyMessagesResponse;
+
+      // 将 Dify 消息拆分为 user + assistant 两条
+      const items: MessageListResult['data']['items'] = [];
+      for (const msg of data.data ?? []) {
+        items.push({
+          id: `${msg.id}_user`,
+          role: 'user',
+          type: 'text',
+          content: msg.query,
+        });
+        items.push({
+          id: `${msg.id}_assistant`,
+          role: 'assistant',
+          type: 'text',
+          content: msg.answer,
+        });
+      }
+
+      return {
+        data: {
+          conversationId: input.conversationId,
+          hasMore: data.has_more,
+          items,
+        },
+      };
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      this.logger.error(
+        `Dify messages error: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      throw new InternalServerErrorException('Dify messages error');
+    } finally {
+      clearTimeout(timer);
     }
   }
 
