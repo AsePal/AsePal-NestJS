@@ -184,6 +184,105 @@ data: "流式响应内容片段"
 
 ---
 
+### 获取对话列表
+
+`GET /chat/conversations`
+
+获取当前用户的对话列表。
+
+**认证**: 需要 JWT Token
+
+**查询参数**
+
+| 参数名  | 类型   | 默认值 | 说明                         |
+| ------- | ------ | ------ | ---------------------------- |
+| limit   | number | 20     | 返回多少条记录，最大100      |
+| last_id | string | -      | 当前页最后的记录ID，用于分页 |
+
+**响应**
+
+```json
+{
+  "hasMore": true,
+  "items": [
+    {
+      "id": "c_01HZX9QW6K3M8T4R2H7Q8A1B2C",
+      "title": "重置密码怎么做",
+      "createdAt": 1769140863000,
+      "updatedAt": 1769141385000
+    },
+    {
+      "id": "c_01HZX9ABC6K3M8T4R2H7Q8A9D8",
+      "title": "JWT 随机值校验",
+      "createdAt": 1769130000000,
+      "updatedAt": 1769136000000
+    }
+  ]
+}
+```
+
+---
+
+### 获取对话历史
+
+`GET /chat/messages`
+
+获取指定对话的消息历史。
+
+**认证**: 需要 JWT Token
+
+**查询参数**
+
+| 参数名          | 类型   | 必需 | 说明                            |
+| --------------- | ------ | ---- | ------------------------------- |
+| conversation_id | string | 是   | 对话ID                          |
+| first_id        | string | 否   | 第一条消息的ID，用于分页        |
+| limit           | number | 否   | 返回多少条消息，默认20，最大100 |
+
+**响应**
+
+```json
+{
+  "data": {
+    "conversationId": "c_01HZX9QW6K3M8T4R2H7Q8A1B2C",
+    "hasMore": true,
+    "items": [
+      {
+        "id": "m_01HZX9QY4W6K3M8T4R2H7Q8A1B_user",
+        "role": "user",
+        "type": "text",
+        "content": "如何实现忘记密码？"
+      },
+      {
+        "id": "m_01HZX9QY4W6K3M8T4R2H7Q8A1B_assistant",
+        "role": "assistant",
+        "type": "text",
+        "content": "可以用邮箱/手机号验证码……"
+      },
+      {
+        "id": "m_01HZX9R2Y9M3K8W1P5J7S2D4F6_user",
+        "role": "user",
+        "type": "text",
+        "content": "具体如何实现？"
+      },
+      {
+        "id": "m_01HZX9R2Y9M3K8W1P5J7S2D4F6_assistant",
+        "role": "assistant",
+        "type": "text",
+        "content": "1. 生成验证码\n2. 发送到用户邮箱\n3. 用户验证后重置密码"
+      }
+    ]
+  }
+}
+```
+
+**说明**
+
+- 每条Dify消息会拆分为用户消息和助手消息两条记录
+- 消息ID格式为 `{dify_message_id}_{role}`
+
+---
+
 ## 用户相关
 
 ### 获取用户信息
