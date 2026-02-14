@@ -5,6 +5,7 @@ import {
   ConversationListResult,
   DifyChatRequest,
   DifyChatResponse,
+  DifyConversationItem,
   DifyConversationsResponse,
   DifyMessagesResponse,
   DifyResponseMode,
@@ -14,6 +15,8 @@ import {
   GetConversationsInput,
   GetMessagesInput,
   MessageListResult,
+  RenameConversationInput,
+  RenameConversationResult,
   SSEWriter,
 } from './dify.types';
 
@@ -387,6 +390,99 @@ export class DifyService {
         `Dify messages error: ${error instanceof Error ? error.message : 'unknown error'}`,
       );
       throw new InternalServerErrorException('Dify messages error');
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async deleteConversation(conversationId: string, userId: string): Promise<void> {
+    if (!this.baseUrl || !this.apiKey) {
+      throw new InternalServerErrorException('Dify configuration missing');
+    }
+
+    const url = this.buildUrl(`/v1/conversations/${conversationId}`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user: userId }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(
+          `Dify delete conversation failed: status=${response.status}, body=${errorText}`,
+        );
+        throw new InternalServerErrorException('Dify delete conversation failed');
+      }
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      this.logger.error(
+        `Dify delete conversation error: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      throw new InternalServerErrorException('Dify delete conversation error');
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async renameConversation(input: RenameConversationInput): Promise<RenameConversationResult> {
+    if (!this.baseUrl || !this.apiKey) {
+      throw new InternalServerErrorException('Dify configuration missing');
+    }
+
+    const url = this.buildUrl(`/v1/conversations/${input.conversationId}/name`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    const body: Record<string, unknown> = { user: input.userId };
+    if (input.name != null) body.name = input.name;
+    if (input.autoGenerate != null) body.auto_generate = input.autoGenerate;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(
+          `Dify rename conversation failed: status=${response.status}, body=${errorText}`,
+        );
+        throw new InternalServerErrorException('Dify rename conversation failed');
+      }
+
+      const data = (await response.json()) as DifyConversationItem;
+
+      return {
+        id: data.id,
+        title: data.name,
+        createdAt: data.created_at * 1000,
+        updatedAt: data.updated_at * 1000,
+      };
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      this.logger.error(
+        `Dify rename conversation error: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      throw new InternalServerErrorException('Dify rename conversation error');
     } finally {
       clearTimeout(timer);
     }

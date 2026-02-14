@@ -283,6 +283,67 @@ data: "流式响应内容片段"
 
 ---
 
+### 删除会话
+
+`DELETE /chat/conversations/:id`
+
+删除一个指定的会话。
+
+**认证**: 需要 JWT Token
+
+**路径参数**
+
+| 参数名 | 类型   | 说明    |
+| ------ | ------ | ------- |
+| id     | string | 会话 ID |
+
+**响应**
+
+- `204 No Content`: 删除成功，无内容返回。
+
+---
+
+### 会话重命名
+
+`POST /chat/conversations/:id/name`
+
+对会话进行重命名，或自动生成标题。
+
+**认证**: 需要 JWT Token
+
+**路径参数**
+
+| 参数名 | 类型   | 说明    |
+| ------ | ------ | ------- |
+| id     | string | 会话 ID |
+
+**请求体**
+
+```json
+{
+  "name": "string (选填，若 autoGenerate 为 true 时可不传)",
+  "autoGenerate": false
+}
+```
+
+**说明**
+
+- `name` 和 `autoGenerate` 至少提供一个
+- 当 `autoGenerate` 为 `true` 时，Dify 会自动根据对话内容生成标题
+
+**响应**
+
+```json
+{
+  "id": "c_01HZX9QW6K3M8T4R2H7Q8A1B2C",
+  "title": "新的会话名称",
+  "createdAt": 1769140863000,
+  "updatedAt": 1769141385000
+}
+```
+
+---
+
 ## 用户相关
 
 ### 获取用户信息

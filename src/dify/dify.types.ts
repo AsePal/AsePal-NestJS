@@ -34,6 +34,20 @@ export interface ConversationListResult {
   }[];
 }
 
+export interface RenameConversationInput {
+  userId: string;
+  conversationId: string;
+  name?: string;
+  autoGenerate?: boolean;
+}
+
+export interface RenameConversationResult {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 // ========== 消息历史类型 ==========
 
 export interface DifyMessageItem {

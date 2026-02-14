@@ -1,10 +1,24 @@
 import type { Response } from 'express';
 
-import { Body, Controller, Get, Post, Query, Request, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { ChatSendDto } from './dto/chat-send.dto';
+import { ConversationRenameDto } from './dto/conversation-rename.dto';
 import { ConversationsQueryDto } from './dto/conversations-query.dto';
 import { MessagesQueryDto } from './dto/messages-query.dto';
 
@@ -29,6 +43,23 @@ export class ChatController {
   @Get('messages')
   async getMessages(@Query() query: MessagesQueryDto, @Request() req: JwtAuthenticatedRequest) {
     return this.chat.getMessages(query, req.user?.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('conversations/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteConversation(@Param('id') id: string, @Request() req: JwtAuthenticatedRequest) {
+    await this.chat.deleteConversation(id, req.user?.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('conversations/:id/name')
+  async renameConversation(
+    @Param('id') id: string,
+    @Body() dto: ConversationRenameDto,
+    @Request() req: JwtAuthenticatedRequest,
+  ) {
+    return this.chat.renameConversation(id, dto, req.user?.userId);
   }
 
   @UseGuards(JwtAuthGuard)
