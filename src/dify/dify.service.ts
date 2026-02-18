@@ -362,13 +362,13 @@ export class DifyService {
       const items: MessageListResult['data']['items'] = [];
       for (const msg of data.data ?? []) {
         items.push({
-          id: `${msg.id}_user`,
+          id: msg.id,
           role: 'user',
           type: 'text',
           content: msg.query,
         });
         items.push({
-          id: `${msg.id}_assistant`,
+          id: msg.id,
           role: 'assistant',
           type: 'text',
           content: msg.answer,
