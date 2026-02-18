@@ -206,13 +206,13 @@ data: "流式响应内容片段"
   "hasMore": true,
   "items": [
     {
-      "id": "c_01HZX9QW6K3M8T4R2H7Q8A1B2C",
+      "id": "550e8400-e29b-41d4-a716-446655440000",
       "title": "重置密码怎么做",
       "createdAt": 1769140863000,
       "updatedAt": 1769141385000
     },
     {
-      "id": "c_01HZX9ABC6K3M8T4R2H7Q8A9D8",
+      "id": "6f8db5c7-3d8b-4e3a-9f2a-1b4c5d6e7f8a",
       "title": "JWT 随机值校验",
       "createdAt": 1769130000000,
       "updatedAt": 1769136000000
@@ -244,29 +244,29 @@ data: "流式响应内容片段"
 ```json
 {
   "data": {
-    "conversationId": "c_01HZX9QW6K3M8T4R2H7Q8A1B2C",
+    "conversationId": "550e8400-e29b-41d4-a716-446655440000",
     "hasMore": true,
     "items": [
       {
-        "id": "m_01HZX9QY4W6K3M8T4R2H7Q8A1B_user",
+        "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
         "role": "user",
         "type": "text",
         "content": "如何实现忘记密码？"
       },
       {
-        "id": "m_01HZX9QY4W6K3M8T4R2H7Q8A1B_assistant",
+        "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
         "role": "assistant",
         "type": "text",
         "content": "可以用邮箱/手机号验证码……"
       },
       {
-        "id": "m_01HZX9R2Y9M3K8W1P5J7S2D4F6_user",
+        "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
         "role": "user",
         "type": "text",
         "content": "具体如何实现？"
       },
       {
-        "id": "m_01HZX9R2Y9M3K8W1P5J7S2D4F6_assistant",
+        "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
         "role": "assistant",
         "type": "text",
         "content": "1. 生成验证码\n2. 发送到用户邮箱\n3. 用户验证后重置密码"
@@ -335,7 +335,7 @@ data: "流式响应内容片段"
 
 ```json
 {
-  "id": "c_01HZX9QW6K3M8T4R2H7Q8A1B2C",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "title": "新的会话名称",
   "createdAt": 1769140863000,
   "updatedAt": 1769141385000
@@ -358,7 +358,7 @@ data: "流式响应内容片段"
 
 ```json
 {
-  "id": "uuid",
+  "id": "550e8400-e29b-41d4-a716-446655440001",
   "username": "string",
   "email": "string|null",
   "phone": "string|null",
@@ -371,7 +371,37 @@ data: "流式响应内容片段"
 
 ---
 
-### 更新用户头像
+### 用户退出登录
+
+`POST /auth/logout`
+
+用户退出登录，清除服务端会话。
+
+**认证**: 需要 JWT Token
+
+**请求体**
+
+```json
+{}
+```
+
+**响应**
+
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+**说明**
+
+- 退出登录后，该 JWT Token 将被加入黑名单
+- 客户端需自行删除本地存储的 Token
+- 退出登录后需重新登录才能进行需要认证的操作
+
+---
+
+## 更新用户头像
 
 `PUT /user/image`
 
@@ -395,11 +425,11 @@ data: "流式响应内容片段"
 
 ```json
 {
-  "id": "uuid",
+  "id": "550e8400-e29b-41d4-a716-446655440001",
   "username": "string",
   "email": "string|null",
   "phone": "string|null",
-  "avatarUrl": "https://your-domain.com/avatars/uuid/timestamp.jpg",
+  "avatarUrl": "https://your-domain.com/avatars/550e8400-e29b-41d4-a716-446655440001/1769141385000.jpg",
   "isActive": true,
   "createdAt": "ISO8601",
   "updatedAt": "ISO8601"
