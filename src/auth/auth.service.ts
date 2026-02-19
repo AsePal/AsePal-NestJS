@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
 import type Redis from 'ioredis';
+import { nanoid } from 'nanoid';
 
 import {
   BadRequestException,
@@ -47,9 +47,9 @@ export class AuthService {
     return safeUser;
   }
 
-  async login(user: { id: string; username: string }) {
-    const jti = randomUUID();
-    const payload = { sub: user.id, username: user.username, jti };
+  async login(user: { id: string }) {
+    const jti = nanoid(8);
+    const payload = { sub: user.id, jti };
 
     // 将jti存储到Valkey，过期时间与JWT一致
     const expiresIn = this.config.get<string>('JWT_EXPIRES_IN') ?? '7d';
@@ -103,7 +103,7 @@ export class AuthService {
       });
 
       // 生成JWT令牌
-      const { accessToken } = await this.login({ id: user.id, username: user.username });
+      const { accessToken } = await this.login({ id: user.id });
 
       return { accessToken };
     } catch (e: unknown) {

@@ -8,7 +8,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 interface AuthenticatedRequest {
-  user: { id: string; username: string; jti?: string };
+  user: { id: string; jti?: string };
 }
 
 @Controller('auth')

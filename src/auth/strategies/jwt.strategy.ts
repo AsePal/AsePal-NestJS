@@ -7,7 +7,6 @@ import { AuthService } from '../auth.service';
 
 interface JwtPayload {
   sub: string;
-  username: string;
   jti: string;
 }
 
@@ -27,6 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Invalid or revoked token');
     }
 
-    return { userId: payload.sub, username: payload.username, jti: payload.jti };
+    return { userId: payload.sub, jti: payload.jti };
   }
 }
