@@ -371,6 +371,77 @@ data: "流式响应内容片段"
 
 ---
 
+### 更新用户信息
+
+`PATCH /user/info`
+
+更新当前登录用户的基本信息（用户名、邮箱、手机号）。
+
+**认证**: 需要 JWT Token
+
+**请求体**
+
+```json
+{
+  "username": "string (可选)",
+  "email": "string (可选)",
+  "phone": "string (可选)"
+}
+```
+
+**说明**
+
+- 至少传入一个字段进行更新
+- 用户名、邮箱、手机号均为全局唯一，若修改为已被其他用户占用的值会返回 409 Conflict 错误
+- 邮箱需符合标准邮箱格式
+
+**响应**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440001",
+  "username": "string",
+  "email": "string|null",
+  "phone": "string|null",
+  "avatarUrl": "string|null",
+  "isActive": true,
+  "createdAt": "ISO8601",
+  "updatedAt": "ISO8601"
+}
+```
+
+**错误响应**
+
+```json
+{
+  "statusCode": 409,
+  "message": "Username already taken",
+  "error": "Conflict"
+}
+```
+
+或
+
+```json
+{
+  "statusCode": 409,
+  "message": "Email already taken",
+  "error": "Conflict"
+}
+```
+
+或
+
+```json
+{
+  "statusCode": 409,
+  "message": "Phone already taken",
+  "error": "Conflict"
+}
+```
+
+---
+
 ### 用户退出登录
 
 `POST /auth/logout`

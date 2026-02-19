@@ -7,6 +7,7 @@ import {
   Get,
   MaxFileSizeValidator,
   ParseFilePipe,
+  Patch,
   Put,
   Req,
   UploadedFile,
@@ -16,6 +17,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateUserInfoDto } from './dto/update-user-info.dto';
 import { UserInfoDto } from './dto/user-info.dto';
 import { UserService } from './user.service';
 
@@ -28,6 +30,16 @@ export class UserController {
   async getUserInfo(@Req() req: Request & { user: { userId: string } }): Promise<UserInfoDto> {
     const userId = req.user.userId;
     return this.userService.getUserInfo(userId);
+  }
+
+  @Patch('info')
+  @UseGuards(JwtAuthGuard)
+  async updateUserInfo(
+    @Req() req: Request & { user: { userId: string } },
+    @Body() dto: UpdateUserInfoDto,
+  ): Promise<UserInfoDto> {
+    const userId = req.user.userId;
+    return this.userService.updateUserInfo(userId, dto);
   }
 
   @Put('image')

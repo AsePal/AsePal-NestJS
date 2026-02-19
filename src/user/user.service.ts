@@ -1,9 +1,10 @@
 import { Repository } from 'typeorm';
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { R2Service } from '../infra/r2/r2.service';
+import { UpdateUserInfoDto } from './dto/update-user-info.dto';
 import { UserInfoDto } from './dto/user-info.dto';
 import { User } from './user.entity';
 
@@ -73,6 +74,40 @@ export class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async updateUserInfo(userId: string, dto: UpdateUserInfoDto): Promise<UserInfoDto> {
+    const user = await this.repo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (dto.username !== undefined) {
+      const existing = await this.repo.findOne({ where: { username: dto.username } });
+      if (existing && existing.id !== userId) {
+        throw new ConflictException('Username already taken');
+      }
+      user.username = dto.username;
+    }
+
+    if (dto.email !== undefined) {
+      const existing = await this.repo.findOne({ where: { email: dto.email } });
+      if (existing && existing.id !== userId) {
+        throw new ConflictException('Email already taken');
+      }
+      user.email = dto.email;
+    }
+
+    if (dto.phone !== undefined) {
+      const existing = await this.repo.findOne({ where: { phone: dto.phone } });
+      if (existing && existing.id !== userId) {
+        throw new ConflictException('Phone already taken');
+      }
+      user.phone = dto.phone;
+    }
+
+    await this.repo.save(user);
+    return this.getUserInfo(userId);
   }
 
   async updateAvatar(userId: string, file: Express.Multer.File): Promise<UserInfoDto> {
