@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsOptional, IsPhoneNumber, IsString, MaxLength } from 'class-validator';
 
 export class UpdateUserInfoDto {
   @IsOptional()
@@ -7,10 +7,10 @@ export class UpdateUserInfoDto {
   username?: string;
 
   @IsOptional()
-  @IsEmail()
+  @IsEmail({}, { message: '邮箱格式不正确' })
   email?: string;
 
   @IsOptional()
-  @IsString()
+  @IsPhoneNumber(undefined, { message: '手机号格式不正确' })
   phone?: string;
 }

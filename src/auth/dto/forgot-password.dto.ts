@@ -1,12 +1,12 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 
 export class ForgotPasswordDto {
   @IsOptional()
-  @IsEmail()
+  @IsEmail({}, { message: '邮箱格式不正确' })
   email?: string;
 
   @IsOptional()
-  @IsString()
+  @IsPhoneNumber(undefined, { message: '手机号格式不正确' })
   phone?: string;
 }
 
